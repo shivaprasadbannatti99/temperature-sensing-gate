@@ -1,0 +1,101 @@
+#include <Wire.h>
+#include <Adafruit_MLX90614.h>
+#include<LiquidCrystal.h>
+#include <Servo.h>
+const int buzzer=7;
+const int rs = A0, en = A1, d4 = 2, d5 = 3, d6 = 4, d7 = 5;
+int pos = 0;
+LiquidCrystal lcd (rs, en, d4, d5, d6, d7);
+Servo myservo;
+Adafruit_MLX90614 mlx = Adafruit_MLX90614();
+byte degree[8] =
+{
+  0b00011,
+  0b00011,
+  0b00000,
+  0b00000,
+  0b00000,
+  0b00000,
+  0b00000,
+  0b00000,
+};
+
+void setup () 
+{
+  lcd.begin(16,2);
+ lcd.createChar(1, degree);
+  lcd.setCursor(1,0);
+  lcd.clear();
+  lcd.print("   WELCOME TO");
+  lcd.setCursor(0,1);
+  lcd.print("KLECET CHIKKODI");
+  delay(5000);
+  Serial.begin(9600);
+  myservo.attach(9);
+  pinMode(buzzer, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
+  Serial.println("Adafruit MLX90614 test");
+   mlx.begin();
+}
+
+
+ void loop ()
+{
+  
+  float temp_val;
+   
+  Serial.print("*C\tObject = ");
+  Serial.print(mlx.readObjectTempC());
+  Serial.println("*C");
+  temp_val = mlx.readObjectTempC() + 4;
+ 
+ 
+  if(temp_val>37)
+  { 
+    lcd.clear();
+    lcd.setCursor(2,0);
+    lcd.print("TEMP IS > 37 ");
+    lcd.setCursor(4,1);
+    lcd.print(temp_val);
+    lcd.write(1);
+    lcd.print("C");
+    tone(buzzer,1000);
+    delay(3000);
+    noTone(buzzer);
+    delay(1000);
+    for (pos = 0; pos <= 90; pos += 1) 
+    {
+     
+      
+    myservo.write(pos);              
+    delay(200);
+    
+    }
+ 
+    Serial.print("temperature is greater than 37\n");
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(300);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(300);
+  }
+
+ else if(temp_val<37)
+ {
+    lcd.clear();
+    lcd.setCursor(1,0);
+    lcd.print("TEMPERATURE IS ");
+    lcd.setCursor(4,1);
+    lcd.print(temp_val);
+    lcd.write(1);
+    lcd.print("C");
+  
+ }
+ 
+  else
+  {
+     lcd.clear();
+     lcd.setCursor(2,1);
+     lcd.print("COME CLOSER");
+    Serial.print("Not working\n");
+  }
+ }
